@@ -1,10 +1,14 @@
 import os
-
+import sys
 import django
 from django.db import transaction
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "backend.config.settings")  # Укажи свой проект
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", 'config.settings') # Укажи свой проект
 django.setup()
+
+
 from games.models import (
     Type, PlayerCount, AgeGroup, DifficultyLevel, Genre, Mechanic, Duration, Game, Publisher
 )
