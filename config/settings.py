@@ -46,6 +46,10 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+INSTALLED_APPS += ["corsheaders"]
+
+MIDDLEWARE.insert(1, "corsheaders.middleware.CorsMiddleware")
+
 ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
@@ -140,9 +144,14 @@ X_FRAME_OPTIONS = "DENY"
 CSP_DEFAULT_SRC = ("'self'",)
 
 # CSP settings for dev
-CSP_SCRIPT_SRC = ("'self'", "http://localhost:3000")
-CSP_STYLE_SRC = ("'self'", "http://localhost:3000")
-CSP_IMG_SRC = ("'self'", "data:", "http://localhost:3000")
+CSP_SCRIPT_SRC = ("'self'", "http://localhost:5173")
+CSP_STYLE_SRC = ("'self'", "http://localhost:5173")
+CSP_IMG_SRC = ("'self'", "data:", "http://localhost:5173")
+CSRF_TRUSTED_ORIGINS = ["http://localhost:5173", "http://localhost:3000"]
+
+
+
+CORS_ALLOW_ALL_ORIGINS = True  # Дозволити всі (лише для тестів, у продакшені використовуй CORS_ALLOWED_ORIGINS)
 
 # CSP settings for prod
 # CSP_SCRIPT_SRC = ("'self'",)
