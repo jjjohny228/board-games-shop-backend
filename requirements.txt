@@ -2,7 +2,8 @@ asgiref==3.8.1
 attrs==25.3.0
 black==25.1.0
 click==8.1.8
-Django==5.1.7
+Django==4.2.20
+django-cors-headers==4.7.0
 django-dynamic-fixture==4.0.1
 django-filter==25.1
 django_csp==3.8
@@ -21,5 +22,6 @@ PyYAML==6.0.2
 referencing==0.36.2
 rpds-py==0.23.1
 sqlparse==0.5.3
+# tomli==2.2.1
 typing_extensions==4.13.0
 uritemplate==4.1.1
