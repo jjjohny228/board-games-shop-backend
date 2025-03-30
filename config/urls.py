@@ -3,12 +3,13 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework_simplejwt.views import TokenRefreshView, TokenObtainPairView, TokenVerifyView
 
 class PingView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAdminUser]
     def get(self, request):
         return Response({"message": "hello world"})
 
@@ -20,5 +21,8 @@ urlpatterns = [
                   path("schema/", SpectacularAPIView.as_view(), name="schema"),  # JSON схема API
     path("swagger/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),  # Swagger UI
     path("redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),  # Redoc UI
+    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
