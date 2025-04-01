@@ -1,0 +1,48 @@
+name: Notify Telegram on Push or Merge
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types:
+      - closed
+
+jobs:
+  notifyTelegram:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if push is not from merge commit
+        id: check_merge
+        run: |
+          if [[ "${{ github.event.head_commit.message }}" == *"Merge pull request"* ]]; then
+            echo "MERGE_COMMIT=true" >> $GITHUB_ENV
+          else
+            echo "MERGE_COMMIT=false" >> $GITHUB_ENV
+          fi
+          
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "MESSAGE_TYPE=PR" >> $GITHUB_ENV
+          else
+            echo "MESSAGE_TYPE=COMMIT" >> $GITHUB_ENV
+          fi
+      
+      - name: Send Telegram Notification
+        if: env.MERGE_COMMIT == 'false'
+        uses: appleboy/telegram-action@master
+        with:
+          to: "${{ secrets.TELEGRAM_CHAT_ID }}"
+          token: "${{ secrets.TELEGRAM_BOT_TOKEN }}"
+          message: |
+            🚀 Репозиторий: ${{ github.repository }}
+            
+            👤 Действие: ${{ github.event_name }} в ветку ${{ github.ref_name }}
+            
+            ✍️ Автор: ${{ github.actor }}
+            
+            ${{ env.MESSAGE_TYPE == 'PR' && format('📌 PR Title: {0}\n📝 PR Description: {1}', github.event.pull_request.title, github.event.pull_request.body) || format('📝 Commit Title: {0}', github.event.head_commit.message) }}
+            
+            🔗 [Коммит](https://github.com/${{ github.repository }}/commit/${{ github.sha }})
+
+            🔄 Пора забрать последние изменения:
+            git checkout main && git pull origin main
