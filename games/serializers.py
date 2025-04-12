@@ -1,4 +1,7 @@
+from datetime import datetime
+
 from django.core.files import images
+from django.utils.translation import gettext_lazy as _
 from rest_framework.exceptions import ValidationError
 
 from .models import Game, Image, Genre, DifficultyLevel, Type, Mechanic, Duration, AgeGroup, PlayerCount, Publisher
@@ -106,6 +109,7 @@ class GameSerializer(serializers.ModelSerializer):
     class Meta:
         model = Game
         fields = '__all__'
+        read_only_fields = ('created_at', 'updated_at')
 
     def create(self, validated_data):
         genres = validated_data.pop('genre_ids', [])
@@ -153,3 +157,20 @@ class GameSerializer(serializers.ModelSerializer):
                     print(f"Image validation error: {e}")
 
         return instance
+
+    def validate_release_year(self, value):
+        current_year = datetime.now().year
+        if value < 1900 or value > current_year + 2:
+            raise serializers.ValidationError(f"Year must be between 1900 and {current_year + 2}")
+        return value
+
+    def validate(self, data):
+        if self.context['request'].method in ['POST', 'PUT']:
+            if not data.get('genre_ids'):
+                raise serializers.ValidationError({"genre_ids": _("This field cannot be empty.")})
+            if not data.get('mechanic_ids'):
+                raise serializers.ValidationError({"mechanic_ids": _("This field cannot be empty.")})
+            if not data.get('type_ids'):
+                raise serializers.ValidationError({"type_ids": _("This field cannot be empty.")})
+
+        return data

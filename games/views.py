@@ -57,7 +57,6 @@ class GameModelViewSet(viewsets.ModelViewSet):
         """
         game = self.get_object()
         images = game.images.all()
-        # print(images)
         print(Image.objects.all())
         serializer = ImageSerializer(images, many=True, context={'request': request})
         return Response(serializer.data)
