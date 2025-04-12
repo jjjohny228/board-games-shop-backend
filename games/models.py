@@ -54,11 +54,11 @@ class Review(models.Model):
 
 
 class Publisher(models.Model):
-    name = models.CharField(max_length=50, unique=True)
+    name = models.CharField(max_length=100, unique=True)
 
 
 class Game(models.Model):
-    title = models.CharField(max_length=100)
+    title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     rules_summary = models.TextField(blank=True)
     release_year = models.IntegerField()
