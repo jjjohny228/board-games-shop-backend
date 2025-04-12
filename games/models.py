@@ -1,4 +1,5 @@
 import re
+from decimal import Decimal
 from uuid import uuid4
 
 from django.conf import settings
@@ -48,7 +49,7 @@ def game_image_upload_to(instance: "Image", filename: str) -> str:
 class Review(models.Model):
     game = models.ForeignKey("Game", on_delete=models.CASCADE, related_name="reviews")
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reviews")
-    rating = models.FloatField(validators=[MinValueValidator(0), MaxValueValidator(5)])
+    rating = models.DecimalField(validators=[MinValueValidator(Decimal("0.0")), MaxValueValidator(Decimal("5.0"))], max_digits=2, decimal_places=1)
     comment = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -96,6 +97,11 @@ class Game(models.Model):
         if self.discount_price is None:
             self.discount_price = self.price
         super().save(*args, **kwargs)
+
+    @property
+    def get_average_rating(self) -> float:
+        all_ratings = [review.rating for review in self.reviews.all()]
+        return sum(all_ratings) / len(all_ratings) if all_ratings else 0.0
 
 
 class Image(models.Model):
