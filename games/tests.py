@@ -1,19 +1,15 @@
-from django.core.files.uploadedfile import SimpleUploadedFile
+import io
+from ddf import G
+from PIL import Image
+
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
-from django.contrib.auth.models import User
-from ddf import G
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 from games.models import Game, AgeGroup, Type, DifficultyLevel, Genre, Mechanic, Duration, Review, PlayerCount, Publisher
-from datetime import date
-
-import io
-
-from django.core.files.uploadedfile import SimpleUploadedFile
-from PIL import Image
-
 
 def create_image(height: int, width: int) -> SimpleUploadedFile:
     # Creates image with different sizes for tests
@@ -28,11 +24,10 @@ class GameViewSetTest(APITestCase):
     @classmethod
     def setUpTestData(cls):
         # Create admin user
-        # Create admin user
-        cls.admin_user = G(User, username='admin', password='password', is_staff=True)
+        cls.admin_user = G(User, is_staff=True)
 
         # Create regular user
-        cls.user = G(User, username='regular', password='password')
+        cls.user = G(User)
 
         # Create related models
         cls.type_board = G(Type, name='board')
@@ -85,7 +80,6 @@ class GameViewSetTest(APITestCase):
             duration=cls.duration_30,
             release_year=2022
         )
-        print('Game was created', cls.game2)
         cls.game2.type.add(cls.type_card)
         cls.game2.genre.add(cls.genre_family)
         cls.game2.mechanic.add(cls.mechanic_1)
