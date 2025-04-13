@@ -1,7 +1,7 @@
 import re
 
 from django.db import models
-from rest_framework.authtoken.admin import User
+from django.contrib.auth.models import User
 from rest_framework.exceptions import ValidationError
 
 from games.models import Game

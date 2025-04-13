@@ -30,13 +30,13 @@ class GenreSerializer(serializers.ModelSerializer):
 
 class TypeSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Genre
+        model = Type
         fields = '__all__'
 
 
 class MechanicSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Type
+        model = Mechanic
         fields = '__all__'
 
 
