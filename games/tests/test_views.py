@@ -10,15 +10,7 @@ from django.contrib.auth.models import User
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from games.models import Game, AgeGroup, Type, DifficultyLevel, Genre, Mechanic, Duration, Review, PlayerCount, Publisher
-
-def create_image(height: int, width: int) -> SimpleUploadedFile:
-    # Creates image with different sizes for tests
-    valid_image = Image.new('RGB', (height, width), color='white')
-    buffer = io.BytesIO()
-    valid_image.save(buffer, format='JPEG')
-    image_data = buffer.getvalue()
-    return SimpleUploadedFile('cover.jpg', image_data, content_type='image/jpg')
-
+from games.tests.test_utils import create_image
 
 class GameViewSetTest(APITestCase):
     @classmethod

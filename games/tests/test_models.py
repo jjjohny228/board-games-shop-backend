@@ -1,9 +1,7 @@
 import os
 import shutil
 import tempfile
-from datetime import timedelta
 from decimal import Decimal
-from shutil import rmtree
 from unittest.mock import patch
 from uuid import UUID
 
@@ -15,7 +13,6 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.validators import FileExtensionValidator
 from django.test import TestCase
 from django.test import override_settings
-from django.utils import timezone
 
 from games.models import game_image_upload_to, Game, Image, FileSizeValidator, Review
 from games.tests.test_utils import create_image
