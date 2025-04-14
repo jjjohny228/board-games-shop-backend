@@ -1,36 +1,25 @@
-from django.core.files.uploadedfile import SimpleUploadedFile
+import io
+from ddf import G
+from PIL import Image
+
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
+from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
-from ddf import G
-from games.models import Game, AgeGroup, Type, DifficultyLevel, Genre, Mechanic, Duration, Review, PlayerCount, Publisher
-from datetime import date
-
-import io
-
 from django.core.files.uploadedfile import SimpleUploadedFile
-from PIL import Image
 
-
-def create_image(height: int, width: int) -> SimpleUploadedFile:
-    # Creates image with different sizes for tests
-    valid_image = Image.new('RGB', (height, width), color='white')
-    buffer = io.BytesIO()
-    valid_image.save(buffer, format='JPEG')
-    image_data = buffer.getvalue()
-    return SimpleUploadedFile('cover.jpg', image_data, content_type='image/jpg')
-
+from games.models import Game, AgeGroup, Type, DifficultyLevel, Genre, Mechanic, Duration, Review, PlayerCount, Publisher
+from games.tests.test_utils import create_image
 
 class GameViewSetTest(APITestCase):
     @classmethod
     def setUpTestData(cls):
         # Create admin user
-        # Create admin user
-        cls.admin_user = G(User, username='admin', password='password', is_staff=True)
+        cls.admin_user = G(User, is_staff=True)
 
         # Create regular user
-        cls.user = G(User, username='regular', password='password')
+        cls.user = G(User)
 
         # Create related models
         cls.type_board = G(Type, name='board')
@@ -65,7 +54,7 @@ class GameViewSetTest(APITestCase):
             age_group=cls.age_group_12,
             difficulty=cls.difficulty_medium,
             duration=cls.duration_60,
-            release_year=date(2021, 1, 1)
+            release_year=2022
         )
         cls.game1.type.add(cls.type_board)
         cls.game1.genre.add(cls.genre_strategy)
@@ -81,9 +70,8 @@ class GameViewSetTest(APITestCase):
             age_group=cls.age_group_8,
             difficulty=cls.difficulty_easy,
             duration=cls.duration_30,
-            release_year=date(2022, 1, 1)
+            release_year=2022
         )
-        print('Game was created', cls.game2)
         cls.game2.type.add(cls.type_card)
         cls.game2.genre.add(cls.genre_family)
         cls.game2.mechanic.add(cls.mechanic_1)
@@ -104,10 +92,17 @@ class GameViewSetTest(APITestCase):
         cls.admin_client = APIClient()
         cls.user_client = APIClient()
 
+        # Create JWT tokens for both users
+        cls.admin_refresh = RefreshToken.for_user(cls.admin_user)
+        cls.admin_access = str(cls.admin_refresh.access_token)
+
+        cls.user_refresh = RefreshToken.for_user(cls.user)
+        cls.user_access = str(cls.user_refresh.access_token)
+
     def setUp(self):
         # This runs before each test method
-        self.admin_client.force_authenticate(user=self.admin_user)
-        self.user_client.force_authenticate(user=self.user)
+        self.admin_client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.admin_access}')
+        self.user_client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.user_access}')
         # Unauthenticated client will be self.client
 
     def test_list_games_unauthenticated(self):
@@ -136,7 +131,7 @@ class GameViewSetTest(APITestCase):
             'genre_ids': [self.genre_adventure.id],
             'mechanic_ids': [self.mechanic_4.id],
             'duration_id': self.duration_45.id,
-            'release_year': '2023-01-01',
+            'release_year': 2023,
             "images": [
                 create_image(1000, 1500),
                 create_image(800, 800)
@@ -161,7 +156,7 @@ class GameViewSetTest(APITestCase):
             'genre': [self.genre_adventure.id],
             'mechanic': [self.mechanic_4.id],
             'duration': self.duration_45.id,
-            'release_year': '2023-01-01'
+            'release_year': 2023
         }
         # Test with regular user
         response = self.user_client.post(self.list_url, data)
@@ -169,12 +164,16 @@ class GameViewSetTest(APITestCase):
 
         # Test with unauthenticated user
         response = self.client.post(self.list_url, data)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_update_game_admin(self):
         """Test that admin can update a game"""
         data = {'title': 'Updated Game Title'}
         response = self.admin_client.patch(self.detail_url, data)
+        response2 = self.admin_client.get(self.detail_url)
+        print(response2.data)
+        print('Response Status:', response.status_code)
+        print('Response Data:', response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['title'], 'Updated Game Title')
 
@@ -334,7 +333,7 @@ class GameViewSetTest(APITestCase):
                 age_group=self.age_group_12,
                 difficulty=self.difficulty_medium,
                 duration=self.duration_45,
-                release_year=date(2023, 1, 1)
+                release_year=2023
             )
             game.type.add(self.type_board)
             game.genre.add(self.genre_strategy)

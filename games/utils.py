@@ -62,7 +62,7 @@ with transaction.atomic():
             title=game_data["title"],
             description=f"Гра {game_data['title']} - захоплююча гра у жанрі {', '.join(game_data['genres'])}",
             rules_summary="Правила гри будуть додані пізніше.",
-            release_year="2023-01-01",
+            release_year=2023,
             price=500,
             discount_price=450,
             stock=10,

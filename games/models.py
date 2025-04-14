@@ -1,10 +1,12 @@
 import re
+from decimal import Decimal
 from uuid import uuid4
 
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import UploadedFile
+from django.utils.translation import gettext_lazy as _
 from django.core.validators import (
     MinValueValidator,
     MaxValueValidator,
@@ -28,7 +30,7 @@ class FileSizeValidator:
         filesize = value.size
         if filesize > self.max_size:
             raise ValidationError(
-                f"The maximum file size must be less than {self.max_size / (1024 * 1024)} MB"
+                _(f"The maximum file size must be less than {self.max_size / (1024 * 1024)} MB")
             )
 
 
@@ -47,24 +49,23 @@ def game_image_upload_to(instance: "Image", filename: str) -> str:
 class Review(models.Model):
     game = models.ForeignKey("Game", on_delete=models.CASCADE, related_name="reviews")
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reviews")
-    rating = models.FloatField(validators=[MinValueValidator(0), MaxValueValidator(5)])
+    rating = models.DecimalField(validators=[MinValueValidator(Decimal("0.0")), MaxValueValidator(Decimal("5.0"))], max_digits=2, decimal_places=1)
     comment = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
 
 class Publisher(models.Model):
-    name = models.CharField(max_length=50, unique=True)
+    name = models.CharField(max_length=100, unique=True)
 
 
 class Game(models.Model):
-    title = models.CharField(max_length=100)
+    title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     rules_summary = models.TextField(blank=True)
-    release_year = models.DateField()
+    release_year = models.IntegerField()
     price = models.DecimalField(decimal_places=2, max_digits=10)
     discount_price = models.DecimalField(
-        decimal_places=2, max_digits=10, null=True, blank=True
-    )
+        decimal_places=2, max_digits=10, blank=True)
     stock = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -91,6 +92,16 @@ class Game(models.Model):
 
     def __str__(self):
         return self.title
+
+    def save(self, *args, **kwargs):
+        if self.discount_price is None:
+            self.discount_price = self.price
+        super().save(*args, **kwargs)
+
+    @property
+    def get_average_rating(self) -> float:
+        all_ratings = [review.rating for review in self.reviews.all()]
+        return sum(all_ratings) / len(all_ratings) if all_ratings else 0.0
 
 
 class Image(models.Model):
@@ -155,79 +166,4 @@ class Duration(models.Model):
     def __str__(self):
         return self.name
 
-
-class Cart(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="carts")
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    @property
-    def get_cart_total(self):
-        items = self.cart_items.all()
-        total = sum([item.get_total for item in items])
-        return total
-
-    @property
-    def get_cart_quantity_items(self):
-        items = self.cart_items.all()
-        total = sum([item.quantity for item in items])
-        return total
-
-
-class CartItem(models.Model):
-    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="cart_items")
-    game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name="cart_items")
-    quantity = models.IntegerField(default=1)
-
-    @property
-    def get_total(self):
-        return self.game.price * self.quantity
-
-
-class Order(models.Model):
-    ORDER_STATUS_CHOICES = (
-        ("pending", "Pending"),
-        ("processing", "Processing"),
-        ("shipped", "Shipped"),
-        ("delivered", "Delivered"),
-        ("cancelled", "Cancelled"),
-    )
-
-    status = models.CharField(max_length=20, default='pending', choices=ORDER_STATUS_CHOICES)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="orders")
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    @property
-    def get_order_total(self):
-        items = self.order_items.all()
-        total = sum([item.get_total for item in items])
-        return total
-
-    @property
-    def get_order_quantity_items(self):
-        items = self.order_items.all()
-        total = sum([item.quantity for item in items])
-        return total
-
-
-class OrderItem(models.Model):
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="order_items")
-    game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name="order_items")
-    quantity = models.IntegerField(default=1)
-    price = models.DecimalField(decimal_places=2, max_digits=10)
-
-    @property
-    def get_total(self):
-        return self.game.price * self.quantity
-
-
-class Shipment(models.Model):
-    def validate_zipcode(value):
-        if not re.fullmatch(r'^\d{5}(-\d{4})?$', value):
-            raise ValidationError("Введите корректный ZIP-код.")
-
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="shipments")
-    state = models.CharField(max_length=100)
-    city = models.CharField(max_length=100)
-    address = models.CharField(max_length=100)
-    zipcode = models.CharField(max_length=10, validators=[validate_zipcode])
 

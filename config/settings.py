@@ -33,6 +33,9 @@ INSTALLED_APPS = [
     "rest_framework",
     "django_filters",
     "games.apps.GamesConfig",
+    "carts.apps.CartsConfig",
+    "orders.apps.OrdersConfig",
+    "users.apps.UsersConfig",
     "csp",
     "drf_spectacular",
     "corsheaders",
@@ -141,7 +144,7 @@ MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 ALLOWED_IMAGE_FILE_EXTENSIONS = ['png', 'jpg', 'bmp']
-MAX_IMAGE_FILE_SIZE = 5 * 1024 * 1024
+MAX_IMAGE_FILE_SIZE = 30 * 1024 * 1024
 
 # Add security headers
 SECURE_CONTENT_TYPE_NOSNIFF = True
