@@ -194,7 +194,7 @@ class GameViewSetTest(APITestCase):
         response = self.user_client.delete(self.detail_url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    def test_number_filters(self):
+    def test_price_filters(self):
         """Test min_price and max_price filters"""
         # Test min_price
         response = self.client.get(f"{self.list_url}?min_price=30")
@@ -210,6 +210,21 @@ class GameViewSetTest(APITestCase):
         response = self.client.get(f"{self.list_url}?min_price=15&max_price=55")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 2)  # Both games should match
+
+        # 1
+        response = self.client.get(f"{self.list_url}?min_price=-1")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('min_price cannot be less than 0.', response.data)  # Both games should match
+
+        # 2
+        response = self.client.get(f"{self.list_url}?min_price=60&max_price=55")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('min_price can not be less than max_price.', response.data)
+
+        # 3
+        response = self.client.get(f"{self.list_url}?max_price=-1")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('max_price cannot be less than 0.', response.data)
 
     def test_type_filter(self):
         """Test type filter"""

@@ -2,6 +2,7 @@ from django_filters import NumberFilter, BaseInFilter
 from django.utils.translation import gettext_lazy as _
 from rest_framework import viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 from .serializers import GameSerializer, ImageSerializer, TypeSerializer, PlayerCountSerializer, AgeGroupSerializer, \
@@ -22,6 +23,20 @@ class GameFilter(FilterSet):
     genre = NumberInFilter(field_name="genre", lookup_expr="in")
     type = NumberInFilter(field_name="type", lookup_expr="in")
     mechanic = NumberInFilter(field_name="mechanic", lookup_expr="in")
+
+    def __init__(self, data=None, *args, **kwargs):
+        super().__init__(data, *args, **kwargs)
+        str_min_price = self.data.get('min_price')
+        str_max_price = self.data.get('max_price')
+        min_price = float(str_min_price) if str_min_price else None
+        max_price = float(str_max_price) if str_max_price else None
+        if min_price is not None and max_price is not None:
+            if min_price > max_price:
+                raise ValidationError("min_price can not be less than max_price.")
+        if min_price is not None and min_price < 0:
+            raise ValidationError("min_price cannot be less than 0.")
+        if max_price is not None and max_price < 0:
+            raise ValidationError("max_price cannot be less than 0.")
 
     class Meta:
         model = Game
