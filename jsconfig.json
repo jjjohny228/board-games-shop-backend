@@ -1,0 +1,23 @@
+{
+    "compilerOptions": {
+        "baseUrl": ".",
+        "esModuleInterop": true,
+
+        "paths": {
+            "@datasets/*": [
+                "api_test/lib/datasets/*"
+            ],
+            "@helpers/*": [
+                "api_test/lib/helpers/*"
+            ]
+        }
+    },
+    "include": [
+        "tests/**/*",
+        "api_test/**/*",
+    ],
+    "exclude": [
+        "node_modules",
+        "**/node_modules/*"
+    ]
+}
