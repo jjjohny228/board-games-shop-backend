@@ -33,10 +33,6 @@ class GameFilter(FilterSet):
         if min_price is not None and max_price is not None:
             if min_price > max_price:
                 raise ValidationError("min_price can not be less than max_price.")
-        if min_price is not None and min_price < 0:
-            raise ValidationError("min_price cannot be less than 0.")
-        if max_price is not None and max_price < 0:
-            raise ValidationError("max_price cannot be less than 0.")
 
     class Meta:
         model = Game
