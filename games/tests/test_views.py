@@ -109,7 +109,7 @@ class GameViewSetTest(APITestCase):
         """Test that anyone can list games without authentication"""
         response = self.client.get(self.list_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 2)  # Assuming we have 2 games
+        self.assertEqual(len(response.data['results']), 2)  # Assuming we have 2 games
 
     def test_retrieve_game_unauthenticated(self):
         """Test that anyone can retrieve a game without authentication"""
@@ -199,17 +199,17 @@ class GameViewSetTest(APITestCase):
         # Test min_price
         response = self.client.get(f"{self.list_url}?min_price=30")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)  # Only game1 should match
+        self.assertEqual(len(response.data['results']), 1)  # Only game1 should match
 
         # Test max_price
         response = self.client.get(f"{self.list_url}?max_price=30")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)  # Only game2 should match
+        self.assertEqual(len(response.data['results']), 1)  # Only game2 should match
 
         # Test both together
         response = self.client.get(f"{self.list_url}?min_price=15&max_price=55")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 2)  # Both games should match
+        self.assertEqual(len(response.data['results']), 2)  # Both games should match
 
         # Test min_price is not greater than max_price
         response = self.client.get(f"{self.list_url}?min_price=60&max_price=55")
@@ -219,70 +219,71 @@ class GameViewSetTest(APITestCase):
     def test_type_filter(self):
         """Test type filter"""
         response = self.client.get(f"{self.list_url}?type={self.type_board.id}")
+        print('Some test', response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['title'], 'Strategy Game')
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['title'], 'Strategy Game')
 
     def test_player_count_filter(self):
         """Test player_count filter"""
         response = self.client.get(f"{self.list_url}?player_count={self.player_count_6.id}")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['title'], 'Family Card Game')
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['title'], 'Family Card Game')
 
     def test_age_group_filter(self):
         """Test age_group filter"""
         response = self.client.get(f"{self.list_url}?age_group={self.age_group_8.id}")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['title'], 'Family Card Game')
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['title'], 'Family Card Game')
 
     def test_difficulty_filter(self):
         """Test difficulty filter"""
         response = self.client.get(f"{self.list_url}?difficulty={self.difficulty_easy.id}")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['title'], 'Family Card Game')
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['title'], 'Family Card Game')
 
     def test_genre_filter(self):
         """Test genre filter"""
-        response = self.client.get(f"{self.list_url}?genre=-1")
+        response = self.client.get(f"{self.list_url}?genre=1")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # self.assertEqual(len(response.data), 1)
-        # self.assertEqual(response.data[0]['title'], 'Strategy Game')
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['title'], 'Strategy Game')
 
     def test_mechanic_filter(self):
         """Test mechanic filter"""
-        response = self.client.get(f"{self.list_url}?mechanic=-1")
+        response = self.client.get(f"{self.list_url}?mechanic=1")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        # self.assertEqual(len(response.data), 1)
-        # self.assertEqual(response.data[0]['title'], 'Strategy Game')
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['title'], 'Family Card Game')
 
     def test_duration_filter(self):
         """Test duration filter"""
         response = self.client.get(f"{self.list_url}?duration={self.duration_60.id}")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['title'], 'Strategy Game')
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['title'], 'Strategy Game')
 
     def test_search(self):
         """Test search functionality"""
         # Search by title
         response = self.client.get(f"{self.list_url}?search=Strategy")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['title'], 'Strategy Game')
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['title'], 'Strategy Game')
 
         # Search by description
         response = self.client.get(f"{self.list_url}?search=family")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['title'], 'Family Card Game')
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['title'], 'Family Card Game')
 
         # Search with no results
         response = self.client.get(f"{self.list_url}?search=nonexistent")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 0)
+        self.assertEqual(len(response.data['results']), 0)
 
     def test_ordering(self):
         """Test ordering functionality"""
@@ -294,8 +295,8 @@ class GameViewSetTest(APITestCase):
         # Test ordering by discount_price
         response = self.client.get(f"{self.list_url}?ordering=discount_price")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data[0]['title'], 'Family Card Game')  # 18.00
-        self.assertEqual(response.data[1]['title'], 'Strategy Game')  # 45.00
+        self.assertEqual(response.data['results'][0]['title'], 'Family Card Game')  # 18.00
+        self.assertEqual(response.data['results'][1]['title'], 'Strategy Game')  # 45.00
 
     def test_combined_filters(self):
         """Test combinations of filters, search, and ordering"""
@@ -303,28 +304,28 @@ class GameViewSetTest(APITestCase):
         url = f"{self.list_url}?min_price=10&max_price=100&search=game&ordering=discount_price"
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 2)
-        self.assertEqual(response.data[0]['title'], 'Family Card Game')  # Lower price
-        self.assertEqual(response.data[1]['title'], 'Strategy Game')  # Higher price
+        self.assertEqual(len(response.data['results']), 2)
+        self.assertEqual(response.data['results'][0]['title'], 'Family Card Game')  # Lower price
+        self.assertEqual(response.data['results'][1]['title'], 'Strategy Game')  # Higher price
 
         # More specific combination
         url = f"{self.list_url}?min_price=30&type={self.type_board.id}&ordering=price"
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-        self.assertEqual(response.data[0]['title'], 'Strategy Game')
+        self.assertEqual(len(response.data['results']), 1)
+        self.assertEqual(response.data['results'][0]['title'], 'Strategy Game')
 
     def test_filter_edge_cases(self):
         """Test edge cases for filters"""
         # Invalid filters should be ignored
         response = self.client.get(f"{self.list_url}?nonexistent_filter=value")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 2)  # All games returned
+        self.assertEqual(len(response.data['results']), 2)  # All games returned
 
         # Empty value for number filter
         response = self.client.get(f"{self.list_url}?min_price=")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 2)  # All games returned
+        self.assertEqual(len(response.data['results']), 2)  # All games returned
 
     def test_pagination(self):
         """Test pagination if implemented"""
