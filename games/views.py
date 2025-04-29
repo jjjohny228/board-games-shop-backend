@@ -28,11 +28,14 @@ class GameFilter(FilterSet):
         super().__init__(data, *args, **kwargs)
         str_min_price = self.data.get('min_price')
         str_max_price = self.data.get('max_price')
-        min_price = float(str_min_price) if str_min_price else None
-        max_price = float(str_max_price) if str_max_price else None
+        try:
+            min_price = float(str_min_price) if str_min_price and str_min_price.isdigit() else None
+            max_price = float(str_max_price) if str_max_price else None
+        except ValueError:
+            raise ValidationError(_('Min price and Max price should be float or int'))
         if min_price is not None and max_price is not None:
             if min_price > max_price:
-                raise ValidationError("min_price can not be less than max_price.")
+                raise ValidationError(_("Min price cannot be less than Max price."))
 
     class Meta:
         model = Game

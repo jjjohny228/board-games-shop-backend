@@ -214,7 +214,7 @@ class GameViewSetTest(APITestCase):
         # Test min_price is not greater than max_price
         response = self.client.get(f"{self.list_url}?min_price=60&max_price=55")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('min_price can not be less than max_price.', response.data)
+        self.assertIn('Min price cannot be less than Max price.', response.data)
 
     def test_type_filter(self):
         """Test type filter"""
