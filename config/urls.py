@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenRefreshView, TokenObtainPairView, TokenVerifyView
 
 class PingView(APIView):
-    permission_classes = [IsAdminUser]
+    permission_classes = [AllowAny]
     def get(self, request):
         return Response({"message": "hello world"})
 

@@ -61,9 +61,9 @@ test.describe("Price", () => {
         const response = await request.get(`${baseUrl}/api/games/?min_price=200`);
         expect(response.status()).toBe(200);
     });
-    test("GET with max_price=150 and min_price=200 returns 200", async ({ request }) => {
+    test("GET with max_price=150 and min_price=200 returns 400", async ({ request }) => {
         const response = await request.get(`${baseUrl}/api/games/?max_price=150&min_price=200`);
-        expect(response.status()).toBe(200);
+        expect(response.status()).toBe(400);
     });
     test("Get with empty max_price returns 200", async ({ request }) => {
         const response = await request.get(`${baseUrl}/api/games/?max_price=`);
