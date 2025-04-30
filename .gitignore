@@ -10,13 +10,4 @@ node_modules/
 test-results/
 api_test/lib/logs/
 api_test/lib/data_sets/
-**/migrations/*
-**/0001_initial.py
-venv
-db_test/
-node_modules/
-test-results/
-api_test/lib/logs/
-api_test/lib/data_sets/
-**/migrations/*
-**/0001_initial.py
+
