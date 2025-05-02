@@ -5,20 +5,19 @@ from games.models import Game
 
 
 class Cart(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="carts")
+    session_id = models.CharField(max_length=244, null=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="carts", null=True)
+    total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total_quantity = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    @property
-    def get_cart_total(self):
+    def update_cart_total(self):
         items = self.cart_items.all()
-        total = sum([item.get_total for item in items])
-        return total
+        self.total = sum([item.get_total for item in items])
 
-    @property
-    def get_cart_quantity_items(self):
+    def update_cart_total_quantity(self):
         items = self.cart_items.all()
-        total = sum([item.quantity for item in items])
-        return total
+        self.total_quantity = sum([item.quantity for item in items])
 
 
 class CartItem(models.Model):

@@ -61,7 +61,7 @@ class GameModelViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve', 'images', 'all_categories']:
-            permission_classes =  [permissions.AllowAny]
+            permission_classes = [permissions.AllowAny]
         else:
             permission_classes = [permissions.IsAdminUser]
         return [permission() for permission in permission_classes]

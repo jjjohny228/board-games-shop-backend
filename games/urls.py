@@ -4,7 +4,7 @@ from .views import GameModelViewSet
 
 app_name = "games"
 router = routers.DefaultRouter()
-router.register(r'games', GameModelViewSet, basename='game')
+router.register(r'', GameModelViewSet, basename='game')
 
 urlpatterns = [
     path("", include(router.urls)),

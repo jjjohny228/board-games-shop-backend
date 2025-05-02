@@ -161,7 +161,7 @@ class GameSerializer(serializers.ModelSerializer):
     def validate_release_year(self, value):
         current_year = datetime.now().year
         if value < 1900 or value > current_year + 2:
-            raise serializers.ValidationError(f"Year must be between 1900 and {current_year + 2}")
+            raise serializers.ValidationError(_(f"Year must be between 1900 and {current_year + 2}"))
         return value
 
     def validate(self, data):
