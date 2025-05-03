@@ -32,7 +32,7 @@ class Migration(migrations.Migration):
                     "user",
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
-                        related_name="carts",
+                        related_name="cart",
                         to=settings.AUTH_USER_MODEL,
                     ),
                 ),
@@ -56,7 +56,7 @@ class Migration(migrations.Migration):
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="cart_items",
-                        to="carts.cart",
+                        to="cart.cart",
                     ),
                 ),
                 (

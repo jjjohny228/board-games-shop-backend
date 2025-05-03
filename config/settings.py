@@ -33,7 +33,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "django_filters",
     "games.apps.GamesConfig",
-    "carts.apps.CartsConfig",
+    "cart.apps.CartConfig",
     "orders.apps.OrdersConfig",
     "users.apps.UsersConfig",
     "csp",
