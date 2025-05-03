@@ -17,6 +17,7 @@ class PingView(APIView):
 urlpatterns = [
     path("ping/", PingView.as_view(), name="ping"),
     path("admin/", admin.site.urls),
+    path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path("api/games/", include('games.urls')),
     path("api/carts/", include('carts.urls')),
     path("schema/", SpectacularAPIView.as_view(), name="schema"),  # JSON схема API
