@@ -20,6 +20,9 @@ class Cart(models.Model):
         items = self.cart_items.all()
         self.total_quantity = sum([item.quantity for item in items])
 
+    def __str__(self):
+        return f'Cart {self.pk}'
+
 
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="cart_items")
@@ -29,3 +32,6 @@ class CartItem(models.Model):
     @property
     def get_total(self):
         return self.game.price * self.quantity
+
+    def __str__(self):
+        return f'Cart: {self.cart}. Game: {self.game} {self.quantity} pcs'

@@ -48,10 +48,10 @@ class CartItemSerializer(ModelSerializer):
 
 
     def validate(self, data):
-        request = self.context.get('request')
+        request = self.context['request']
         item_quantity = data.get('quantity')
-        cart_item_game = data.get('game')
-        if item_quantity > cart_item_game.stock:
+        cart_item_game = self.instance.game if request.method == 'PUT' else data.get('game')
+        if cart_item_game and item_quantity > cart_item_game.stock:
             raise ValidationError(
                 {'quantity': _(f'Quantity cannot exceed available stock ({cart_item_game.stock}).')})
         return data

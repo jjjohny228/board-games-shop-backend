@@ -1,4 +1,4 @@
-from jsonschema.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError
 from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, UpdateAPIView, DestroyAPIView
 from rest_framework.permissions import IsAdminUser, AllowAny
 from rest_framework import generics, status
@@ -29,7 +29,7 @@ class CartDestroyAPIView(APIView):
             carts = Cart.objects.filter(session_id=session_id)
         if carts.exists():
             carts.delete()
-            return Response({'detail': _('Cart was successfully deleted')}, status=204)
+            return Response(status=204)
         raise ValidationError(_('This user does not have a cart'))
 
 
