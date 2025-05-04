@@ -1,15 +1,16 @@
+from django.db import transaction
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView, UpdateAPIView, DestroyAPIView
-from rest_framework.permissions import IsAdminUser, AllowAny
+from rest_framework.permissions import IsAdminUser, AllowAny, IsAuthenticated
 from rest_framework import generics, status
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import gettext as _
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
 from cart.models import Cart, CartItem
-from cart.serializers import CartSerializer, CartItemSerializer
+from cart.serializers import CartSerializer, CartItemSerializer, MergeCartSerializer
 from games.models import Game
 
 
@@ -33,65 +34,64 @@ class CartDestroyAPIView(APIView):
         raise ValidationError(_('This user does not have a cart'))
 
 
-class CartItemCreateAPIView(generics.CreateAPIView):
-    serializer_class = CartItemSerializer
+# class CartItemCreateAPIView(generics.CreateAPIView):
+#     serializer_class = CartItemSerializer
+#
+#     def perform_create(self, serializer):
+#         data = self.request.data
+#         item_quantity = data.get('quantity')
+#         game_id = data.get('game')  # Обычно приходит как id
+#         session_id = self.request.session.session_key
+#
+#         # Получаем игру
+#         game = get_object_or_404(Game, id=game_id)
+#
+#         # Определяем корзину
+#         if self.request.user.is_authenticated:
+#             cart, _ = Cart.objects.get_or_create(user=self.request.user)
+#         else:
+#             cart, _ = Cart.objects.get_or_create(session_id=session_id)
+#
+#         # Создаём CartItem
+#         cart_item = CartItem.objects.create(cart=cart, game=game, quantity=item_quantity)
+#
+#         # Обновляем корзину
+#         cart.update_cart_total()
+#         cart.update_cart_total_quantity()
+#         cart.save()
+#
+#         # Возвращаем сериализованный объект
+#         serializer.instance = cart_item
 
-    def perform_create(self, serializer):
-        request = self.request
-        data = request.data
-        item_quantity = data.get('quantity')
-        game_id = data.get('game')  # Обычно приходит как id
-        session_id = self.request.session.session_key
-
-        # Получаем игру
-        game = get_object_or_404(Game, id=game_id)
-
-        # Определяем корзину
-        if request.user.is_authenticated:
-            cart, _ = Cart.objects.get_or_create(user=request.user)
-        else:
-            cart, _ = Cart.objects.get_or_create(session_id=session_id)
-
-        # Создаём CartItem
-        cart_item = CartItem.objects.create(cart=cart, game=game, quantity=item_quantity)
-
-        # Обновляем корзину
-        cart.update_cart_total()
-        cart.update_cart_total_quantity()
-        cart.save()
-
-        # Возвращаем сериализованный объект
-        serializer.instance = cart_item
-
-class CartItemUpdateDeleteAPIView(UpdateAPIView, DestroyAPIView):
-    serializer_class = CartItemSerializer
-
-    def update(self, request, *args, **kwargs):
-        instance = self.get_object()
-        item_quantity = request.data.get('quantity')
-
-        if item_quantity == '0':
-            instance.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        else:
-            serializer = self.get_serializer(instance, data=request.data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            self.perform_update(serializer)
-            return Response(serializer.data)
-
-    def perform_update(self, serializer):
-        instance = serializer.save()
-        cart = instance.cart
-        cart.update_cart_total()
-        cart.update_cart_total_quantity()
-        cart.save()
-
-    def perform_destroy(self, instance):
-        cart = instance.cart
-        instance.delete()
-        cart.update_cart_total()
-        cart.update_cart_total_quantity()
-        cart.save()
+# class CartItemUpdateDeleteAPIView(UpdateAPIView, DestroyAPIView):
+#     serializer_class = CartItemSerializer
+#
+#     def update(self, request, *args, **kwargs):
+#         instance = self.get_object()
+#         item_quantity = request.data.get('quantity')
+#
+#         if item_quantity == '0':
+#             instance.delete()
+#             return Response(status=status.HTTP_204_NO_CONTENT)
+#         else:
+#             serializer = self.get_serializer(instance, data=request.data, partial=True)
+#             serializer.is_valid(raise_exception=True)
+#             self.perform_update(serializer)
+#             return Response(serializer.data)
+#
+#     def perform_update(self, serializer):
+#         instance = serializer.save()
+#         cart = instance.cart
+#         cart.update_cart_total()
+#         cart.update_cart_total_quantity()
+#         cart.save()
+#
+#     def perform_destroy(self, instance):
+#         cart = instance.cart
+#         instance.delete()
+#         cart.update_cart_total()
+#         cart.update_cart_total_quantity()
+#         cart.save()
 
 
 class CartItemModelViewSet(ModelViewSet):
@@ -100,22 +100,25 @@ class CartItemModelViewSet(ModelViewSet):
         user = self.request.user
         if user.is_authenticated:
             return CartItem.objects.filter(cart__user=user)
+        print('Sessionr4', self.request.session.session_key)
         session_id = self.request.session.session_key
+        if not session_id:
+            self.request.session.save()
+            session_id = self.request.session.session_key
         return CartItem.objects.filter(cart__session_id=session_id)
 
     def perform_create(self, serializer):
-        request = self.request
-        data = request.data
+        data = self.request.data
         item_quantity = data.get('quantity')
         game_id = data.get('game')
         session_id = self.request.session.session_key
 
         game = get_object_or_404(Game, id=game_id)
 
-        if request.user.is_authenticated:
-            cart, _ = Cart.objects.get_or_create(user=request.user)
+        if self.request.user.is_authenticated:
+            cart, is_created = Cart.objects.get_or_create(user=self.request.user)
         else:
-            cart, _ = Cart.objects.get_or_create(session_id=session_id)
+            cart, is_created = Cart.objects.get_or_create(session_id=session_id)
 
         cart_item = CartItem.objects.create(cart=cart, game=game, quantity=item_quantity)
         cart.update_cart_total()
@@ -151,3 +154,41 @@ class CartItemModelViewSet(ModelViewSet):
         cart.save()
 
 
+class MergeCartAPIView(APIView):
+    serializer_class = MergeCartSerializer
+    permission_classes = [IsAuthenticated]
+
+    @transaction.atomic
+    def post(self, request):
+        old_session_id = request.data.get('old_session_id')
+        user = request.user
+
+        if not old_session_id:
+            return Response({'detail': 'session_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        guest_cart = Cart.objects.filter(session_id=old_session_id, user=None)
+        if not guest_cart.exists():
+            return Response({'detail': 'Guest cart not found'}, status=status.HTTP_404_NOT_FOUND)
+        guest_cart = guest_cart.first()
+
+        user_cart, _ = Cart.objects.get_or_create(user=user)
+
+        # Индекс CartItem по game_id для user_cart
+        user_cart_items = {item.game_id: item for item in user_cart.cart_items.all()}
+
+        for guest_item in guest_cart.cart_items.all():
+            if guest_item.game_id in user_cart_items:
+                user_item = user_cart_items[guest_item.game_id]
+                user_item.quantity += guest_item.quantity
+                user_item.save()
+            else:
+                guest_item.cart = user_cart
+                guest_item.save()
+
+        guest_cart.delete()
+
+        user_cart.update_cart_total()
+        user_cart.update_cart_total_quantity()
+        user_cart.save()
+
+        return Response({'detail': 'Carts merged successfully'}, status=status.HTTP_200_OK)
