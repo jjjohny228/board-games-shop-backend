@@ -6,11 +6,12 @@ from games.models import Game
 from django.contrib.auth.models import User
 
 class CartModelTest(TestCase):
-    def setUp(self):
-        self.user = G(User)
-        self.game = G(Game, price=Decimal('100.00'))
-        self.cart = G(Cart, user=self.user)
-        self.cart_item = G(CartItem, cart=self.cart, game=self.game, quantity=2)
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = G(User)
+        cls.game = G(Game, price=Decimal('100.00'))
+        cls.cart = G(Cart, user=cls.user)
+        cls.cart_item = G(CartItem, cart=cls.cart, game=cls.game, quantity=2)
 
     def test_update_cart_total(self):
         self.cart.update_cart_total()

@@ -23,7 +23,7 @@ class CartItemSerializerTest(TestCase):
         cart_item = G(CartItem, cart=self.cart, game=self.game, quantity=2)
         serializer = CartItemSerializer(cart_item)
         self.assertEqual(serializer.data['quantity'], 2)
-        self.assertEqual(serializer.data['game'], self.game.id)
+        self.assertEqual(serializer.data['game']['id'], self.game.id)
 
     def test_cartitem_quantity_not_exceed_stock(self):
         data = {

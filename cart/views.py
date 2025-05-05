@@ -51,7 +51,7 @@ class CartItemModelViewSet(ModelViewSet):
     def perform_create(self, serializer):
         data = self.request.data
         item_quantity = data.get('quantity')
-        game_id = data.get('game')
+        game_id = data.get('game_id')
         session_id = self.request.session.session_key
 
         game = get_object_or_404(Game, id=game_id)
@@ -118,8 +118,8 @@ class MergeCartAPIView(APIView):
         user_cart_items = {item.game_id: item for item in user_cart.cart_items.all()}
 
         for guest_item in guest_cart.cart_items.all():
-            if guest_item.game_id in user_cart_items:
-                user_item = user_cart_items[guest_item.game_id]
+            if guest_item.game.id in user_cart_items:
+                user_item = user_cart_items[guest_item.game.id]
                 user_and_quest_quantity = user_item.quantity + guest_item.quantity
                 user_item.quantity = user_and_quest_quantity if user_and_quest_quantity <= user_item.game.stock else user_item.game.stock
                 user_item.save()

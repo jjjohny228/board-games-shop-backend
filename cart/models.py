@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models import UniqueConstraint
 from django.template.context_processors import request
+from rest_framework.validators import UniqueTogetherValidator
 
 from games.models import Game
 
@@ -28,6 +30,11 @@ class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name="cart_items")
     game = models.ForeignKey(Game, on_delete=models.CASCADE, related_name="cart_items")
     quantity = models.IntegerField()
+
+    class Meta:
+        constraints = [
+            UniqueConstraint(fields=['cart', 'game'], name='unique_game_in_cart_constraint'),
+        ]
 
     @property
     def get_total(self):

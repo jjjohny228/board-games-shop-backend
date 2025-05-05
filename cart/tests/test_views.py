@@ -7,16 +7,26 @@ from cart.models import Cart, CartItem
 from django.contrib.auth.models import User
 
 class CartItemAPITest(APITestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = G(User)
+        cls.game = G(Game, stock=5, price=100)
+        cls.cart = G(Cart, user=cls.user)
+
+        cls.authenticated_client = APIClient()
+
+        user_refresh = RefreshToken.for_user(cls.user)
+        cls.user_access = str(user_refresh.access_token)
+
     def setUp(self):
-        self.user = G(User)
-        self.game = G(Game, stock=5, price=100)
-        self.client.force_authenticate(user=self.user)
-        self.cart = G(Cart, user=self.user)
+        # This runs before each test method
+        self.authenticated_client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.user_access}')
+        # Unauthenticated client will be self.client
 
     def test_create_cart_item(self):
         url = reverse('cart:cart-items-list')
-        data = {'game': self.game.id, 'quantity': 2}
-        response = self.client.post(url, data)
+        data = {'game_id': self.game.id, 'quantity': 2}
+        response = self.authenticated_client.post(url, data)
         self.assertEqual(response.status_code, 201)
         self.assertEqual(CartItem.objects.count(), 1)
         self.assertEqual(CartItem.objects.first().quantity, 2)
@@ -25,7 +35,7 @@ class CartItemAPITest(APITestCase):
         cart_item = G(CartItem, cart=self.cart, game=self.game, quantity=1)
         url = reverse('cart:cart-items-detail', args=[cart_item.id])
         data = {'quantity': 3}
-        response = self.client.patch(url, data)
+        response = self.authenticated_client.patch(url, data)
         self.assertEqual(response.status_code, 200)
         cart_item.refresh_from_db()
         self.assertEqual(cart_item.quantity, 3)
@@ -33,14 +43,14 @@ class CartItemAPITest(APITestCase):
     def test_delete_cart_item(self):
         cart_item = G(CartItem, cart=self.cart, game=self.game)
         url = reverse('cart:cart-items-detail', args=[cart_item.id])
-        response = self.client.delete(url)
+        response = self.authenticated_client.delete(url)
         self.assertEqual(response.status_code, 204)
         self.assertFalse(CartItem.objects.filter(id=cart_item.id).exists())
 
     def test_create_cart_item_exceed_stock(self):
         url = reverse('cart:cart-items-list')
-        data = {'game': self.game.id, 'quantity': 11}
-        response = self.client.post(url, data)
+        data = {'game_id': self.game.id, 'quantity': 11}
+        response = self.authenticated_client.post(url, data)
         self.assertEqual(response.status_code, 400)
         self.assertIn('quantity', response.data)
 
