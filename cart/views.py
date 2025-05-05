@@ -100,7 +100,7 @@ class CartItemModelViewSet(ModelViewSet):
         user = self.request.user
         if user.is_authenticated:
             return CartItem.objects.filter(cart__user=user)
-        print('Sessionr4', self.request.session.session_key)
+        print('Old session', self.request.session.session_key)
         session_id = self.request.session.session_key
         if not session_id:
             self.request.session.save()
@@ -179,7 +179,8 @@ class MergeCartAPIView(APIView):
         for guest_item in guest_cart.cart_items.all():
             if guest_item.game_id in user_cart_items:
                 user_item = user_cart_items[guest_item.game_id]
-                user_item.quantity += guest_item.quantity
+                user_and_quest_quantity = user_item.quantity + guest_item.quantity
+                user_item.quantity = user_and_quest_quantity if user_and_quest_quantity <= user_item.game.stock else user_item.game.stock
                 user_item.save()
             else:
                 guest_item.cart = user_cart
