@@ -96,6 +96,7 @@ class CartDestroyAPIView(APIView):
 
 class CartItemModelViewSet(ModelViewSet):
     serializer_class = CartItemSerializer
+    queryset = CartItem.objects.none() # line for swagger
     def get_queryset(self):
         user = self.request.user
         if user.is_authenticated:
