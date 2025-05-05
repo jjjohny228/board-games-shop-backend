@@ -34,66 +34,6 @@ class CartDestroyAPIView(APIView):
         raise ValidationError(_('This user does not have a cart'))
 
 
-# class CartItemCreateAPIView(generics.CreateAPIView):
-#     serializer_class = CartItemSerializer
-#
-#     def perform_create(self, serializer):
-#         data = self.request.data
-#         item_quantity = data.get('quantity')
-#         game_id = data.get('game')  # Обычно приходит как id
-#         session_id = self.request.session.session_key
-#
-#         # Получаем игру
-#         game = get_object_or_404(Game, id=game_id)
-#
-#         # Определяем корзину
-#         if self.request.user.is_authenticated:
-#             cart, _ = Cart.objects.get_or_create(user=self.request.user)
-#         else:
-#             cart, _ = Cart.objects.get_or_create(session_id=session_id)
-#
-#         # Создаём CartItem
-#         cart_item = CartItem.objects.create(cart=cart, game=game, quantity=item_quantity)
-#
-#         # Обновляем корзину
-#         cart.update_cart_total()
-#         cart.update_cart_total_quantity()
-#         cart.save()
-#
-#         # Возвращаем сериализованный объект
-#         serializer.instance = cart_item
-
-# class CartItemUpdateDeleteAPIView(UpdateAPIView, DestroyAPIView):
-#     serializer_class = CartItemSerializer
-#
-#     def update(self, request, *args, **kwargs):
-#         instance = self.get_object()
-#         item_quantity = request.data.get('quantity')
-#
-#         if item_quantity == '0':
-#             instance.delete()
-#             return Response(status=status.HTTP_204_NO_CONTENT)
-#         else:
-#             serializer = self.get_serializer(instance, data=request.data, partial=True)
-#             serializer.is_valid(raise_exception=True)
-#             self.perform_update(serializer)
-#             return Response(serializer.data)
-#
-#     def perform_update(self, serializer):
-#         instance = serializer.save()
-#         cart = instance.cart
-#         cart.update_cart_total()
-#         cart.update_cart_total_quantity()
-#         cart.save()
-#
-#     def perform_destroy(self, instance):
-#         cart = instance.cart
-#         instance.delete()
-#         cart.update_cart_total()
-#         cart.update_cart_total_quantity()
-#         cart.save()
-
-
 class CartItemModelViewSet(ModelViewSet):
     serializer_class = CartItemSerializer
     queryset = CartItem.objects.none() # line for swagger
