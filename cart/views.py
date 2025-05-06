@@ -61,6 +61,9 @@ class CartItemModelViewSet(ModelViewSet):
         else:
             cart, is_created = Cart.objects.get_or_create(session_id=session_id)
 
+        if CartItem.objects.filter(cart=cart, game=game).exists():
+            raise ValidationError({'game_id': _(f'There is already a game with this ID in your cart.')})
+
         cart_item = CartItem.objects.create(cart=cart, game=game, quantity=item_quantity)
         cart.update_cart_total()
         cart.update_cart_total_quantity()

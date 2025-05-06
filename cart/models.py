@@ -2,7 +2,9 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models import UniqueConstraint
 from django.template.context_processors import request
+from rest_framework.exceptions import ValidationError
 from rest_framework.validators import UniqueTogetherValidator
+from django.utils.translation import gettext_lazy as _
 
 from games.models import Game
 
@@ -33,7 +35,7 @@ class CartItem(models.Model):
 
     class Meta:
         constraints = [
-            UniqueConstraint(fields=['cart', 'game'], name='unique_game_in_cart_constraint'),
+            models.UniqueConstraint(fields=['cart', 'game'], name='unique_cart_game')
         ]
 
     @property

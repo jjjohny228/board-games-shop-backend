@@ -54,6 +54,14 @@ class CartItemAPITest(APITestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn('quantity', response.data)
 
+    def test_add_already_existing_cart_item(self):
+        G(CartItem, cart=self.cart, game=self.game.id)
+        url = reverse('cart:cart-items-list')
+        data = {'game_id': self.game.id, 'quantity': 5}
+        response = self.authenticated_client.post(url, data)
+        self.assertEqual(response.status_code, 400)
+        self.assertIn('game_id', response.data)
+
 
 class MergeCartAPITest(APITestCase):
     @classmethod

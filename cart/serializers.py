@@ -2,6 +2,7 @@ from decimal import Decimal
 
 from rest_framework.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
+from rest_framework.validators import UniqueTogetherValidator
 
 from cart.models import Cart, CartItem
 from games.models import Game
@@ -16,7 +17,7 @@ class CartSerializer(serializers.ModelSerializer):
 class CartItemGameSerializer(serializers.ModelSerializer):
     class Meta:
         model = Game
-        fields = ['title', 'price', 'discount_price']
+        fields = ['id', 'title', 'price', 'discount_price']
 
 
 class CartItemSerializer(serializers.ModelSerializer):
