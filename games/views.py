@@ -125,6 +125,6 @@ class GameModelViewSet(viewsets.ModelViewSet):
         base_url = request.build_absolute_uri('/api/games/?')
         for category in categories:
             for value in category['values']:
-                value['filter_url'] = f"{base_url}{category['name']}={value['id']}"
+                value['filter_url'] = f"?{category['name']}={value['id']}"
 
         return Response(categories)
