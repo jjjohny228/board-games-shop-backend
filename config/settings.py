@@ -163,7 +163,7 @@ CSP_DEFAULT_SRC = ("'self'",)
 CSP_SCRIPT_SRC = ("'self'", "http://localhost:5173")
 CSP_STYLE_SRC = ("'self'", "http://localhost:5173")
 CSP_IMG_SRC = ("'self'", "data:", "http://localhost:5173")
-CSRF_TRUSTED_ORIGINS = ["http://localhost:5173", "http://localhost:3000"]
+CSRF_TRUSTED_ORIGINS = ["http://localhost:5173", "http://localhost:3000", "https://card-board.vercel.app/"]
 
 
 
