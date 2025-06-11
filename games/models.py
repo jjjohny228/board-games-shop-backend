@@ -43,7 +43,7 @@ def game_image_upload_to(instance: "Image", filename: str) -> str:
     ext = filename.split(".")[-1]
     file_prefix = str(uuid4()).split("-")[4]
     filename = f"{file_prefix}.{ext}"
-    return f"games/{instance.game.id}_{instance.game.title}/{filename}"
+    return f"games/{instance.game.id}/{filename}"
 
 
 class Review(models.Model):
